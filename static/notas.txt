@@ -1,0 +1,12 @@
+recives todo y luego le pagas .8 al provvedor
+oo el proveedor recibe todo y luego te paga .2
+
+vocales acentuadias ü " Ы Ю son caracteres no ascii Ն o'farrill
+ճ-elimino
+
+[^\x00-\x7F]+ buscar carcteres que nosean ascii para la proxima ahi luego
+
+import model
+class CPdata:
+  @staticmethod
+  def get():

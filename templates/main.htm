@@ -1,0 +1,178 @@
+{% extends "base.htm" %}
+
+{% block title %}Control de Incidencias{% endblock %}
+{% block heading %}Control de Incidencias{% endblock %}
+{% block head %}
+<link rel="stylesheet" href="/static/css/bootstrap-drawer.css"/>
+<script type="text/javascript" src="/static/js/drawer.js"></script>
+<link rel="stylesheet" href="/static/css/style.min.css">
+<script src="/static/js/jstree.min.js" type="text/javascript"></script>
+{% endblock %}
+{% block content %}
+<div class="has-inner-drawer" style="style="z-index: 500">
+	<div id="drawerExample2" class="drawer drawer-inside dw-xs-10 fold" aria-labelledby="drawerExample2">
+		<div class="drawer-controls">
+			<a href="#drawerExample2" data-toggle="drawer" href="#drawerExample2" aria-foldedopen"false" aria-controls="drawerExample2" class="btn btn-primary btn-sm">Proyectos</a>
+		</div>
+		<div class="drawer-contents">
+			<div class="drawer-heading">
+				<h2 class="drawer-title">Proyectos</h2>
+			</div>
+			<div id="jstree_demo"></div>
+<!-- 			<ul class="drawer-nav">
+				<li role="presentation" class="active"><a href="#">Link</a></li>
+				<li role="presentation"><a href="#">Link</a></li>
+				<li role="presentation"><a href="#">Link</a></li>
+			</ul>
+			<div class="drawer-body">
+				<p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod
+				tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam,
+				quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo
+				consequat.</p>
+				<a href="#">A Regular Link</a>
+			</div>
+			<div class="drawer-footer locked text-center">
+				<small>&copy; Luisito Rey</small>
+			</div> -->
+		</div>
+	</div>
+	<div class="panel-body" style="min-height: 900px">
+		<div class="container">
+			<div class="row" id="contenedorproductos">   
+				{% for item in items %}
+				<div class="col-sm-4">
+					<div class="gray">
+					<ul>
+						<li><strong>{{ item.id }}</strong><br/>
+						<strong>{{ item.title }}</strong> reportado por: <strong>{{ item.owner }}</strong><br/>
+						<strong>{{ item.created }}</strong><br/>
+							<div id="myCarousel{{ item.key }}" class="carousel slide" data-ride="carousel">
+								<div class="carousel-inner" role="listbox">
+								  {% for image in item.images %}
+									{% if forloop.first %}  
+										<div class="carouselImg item active">
+											<img src="/image/{{ image.key }}/" alt="{{ item.title }}"/>
+										</div>
+									{% else %}
+										<div class="carouselImg item">
+											<img src="/image/{{ image.key }}/" alt="{{ item.title }}"/>
+										</div>
+									{% endif %}
+								  {% endfor %}
+								</div>
+								  {% for image in item.images %}
+									{% if forloop.first %}
+								<!-- Left and right controls -->
+								<a class="left carousel-control" href="#myCarousel{{ item.key }}" role="button" data-slide="prev">
+								  <span class="glyphicon glyphicon-chevron-left" aria-hidden="true"></span>
+								  <span class="sr-only">Anterior</span>
+								</a>
+								<a class="right carousel-control" href="#myCarousel{{ item.key }}" role="button" data-slide="next">
+								  <span class="glyphicon glyphicon-chevron-right" aria-hidden="true"></span>
+								  <span class="sr-only">Siguiente</span>
+								</a>
+									{% endif %}
+								  {% endfor %}
+							</div>
+							<br/><br/><p>{{ item.description }}</p><br/>
+						{% if user %}	
+						{% if profile.role == 'ADMIN' %}
+							<a href="/update/{{ item.key }}/">Modificar esta incidencia</a><br/>
+							<a href="/delete/{{ item.key }}/" data-confirm="Estas seguro de borrar esta incidencia?">Eliminar incidencia</a><br/>
+						{% endif %}
+						{% endif %}
+						<!--
+							<a href="/buy/{{ item.key }}/" class="btn btn-primary" role="button">Comprar ahora</a><br/><br/>
+							<button type="button" class="btn btn-info" productkey="{{ item.key }}">Añadir al carro</button><br/><br/>
+							<div class="panel panel-default">
+								<div class="panel-body">		-->		<!-- Your share button code --><!--
+									<div class="fb-like" data-href="/item/{{ item.key }}/" data-layout="button_count" data-share="true" data-width="450" data-show-faces="true"></div>
+									<div class="g-plusone" data-annotation="none" data-href="/item/{{ item.key }}/"></div>
+									<div class="g-plus" data-action="share" data-annotation="none" data-href="/item/{{ item.key }}/"></div>
+								</div>
+							</div>-->
+						</li>
+					</ul>
+					</div>
+				</div>
+				{% endfor %}
+			</div>
+		</div>
+	</div>
+</div>
+<script>
+$(document).ready(function() {
+       $('#jstree_demo').jstree({
+		    "core": {"data" : [],check_callback : true}
+			,"search": { "case_insensitive": true,"show_only_matches" : true}
+			,"plugins" : ["dnd", "search","state", "wholerow"]
+			
+		});	   
+	$.ajax({
+		method: "POST",
+	    dataType: "json",
+	    url: "/categories",
+	    data: {"mainpage":true}
+	  }).done(function (data) { 
+		$("#jstree_demo").jstree(true).settings.core.data = data;
+		$("#jstree_demo").jstree(true).refresh();
+   });
+
+	$('#jstree_demo').on("changed.jstree", function (e, data) {
+	//alert($('#jstree_demo').jstree(true).get_path(data.node,"/"));
+	//alert(data.inst.get_path(data.rslt.obj)[0])
+	if(data.node){
+		$.ajax({
+		method: "POST",
+	    dataType: "html",
+	    url: "/items/"+data.node.id+"/",
+	    data: {}
+		}).done(function (data) { 
+		    $('#drawerExample2').drawer('toggle');
+			$("#contenedorproductos").html(data);
+			FB.XFBML.parse();
+			gapi.plus.go();
+			gapi.plusone.go();
+		});
+    }
+});
+
+	$('a[data-confirm]').click(function(ev) {
+		var href = $(this).attr('href');
+		if (!$('#dataConfirmModal').length) {
+			$('body').append('<div id="dataConfirmModal" class="modal fade" role="dialog" aria-labelledby="dataConfirmLabel">'+
+			'<div class="modal-content">'+
+			'	<div class="modal-header">'+
+			'		<button type="button" class="close" data-dismiss="modal">&times;</button>'+
+			'		<h4 id="dataConfirmLabel" class="modal-title">Confirme porfavor</h4>'+
+			'	</div>'+
+			'	<div class="modal-body"></div>'+
+			'	<div class="modal-footer">'+
+			'		<button type="button" class="btn btn-default" data-dismiss="modal">Cerrar</button>'+
+			'		<a class="btn btn-primary" id="dataConfirmOK">Si</a>'+
+			'	</div>'+
+			'</div>'+
+			'</div>');
+		} 
+		$('#dataConfirmModal').find('.modal-body').text($(this).attr('data-confirm'));
+		$('#dataConfirmOK').attr('href', href);
+		$('#dataConfirmModal').modal({show:true});
+		return false;
+	});
+	$('button[productkey]').click(function(ev) {
+		var key = $(this).attr('productkey');
+		$.ajax({
+			method: "POST",
+		    dataType: "json",
+		    url: "/shoppingCart/",
+		    data: { item: key}
+		  }).done(function (data) { 
+		    if (data.redirect) {
+                // data.redirect contains the string URL to redirect to
+                window.location.href = data.redirect;
+            }
+		});
+	});
+});
+</script>
+{% endblock %}

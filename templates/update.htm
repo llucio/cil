@@ -1,0 +1,201 @@
+{% extends "base.htm" %}
+
+{% block title %}Modificar incidencia{% endblock %}
+{% block heading %}Modificar incidencia{% endblock %}
+{% block head %}
+<link rel="stylesheet" href="/static/css/style.min.css">
+<script src="/static/js/jstree.min.js" type="text/javascript"></script>
+{% endblock %}
+{% block content %}
+<div class="container">
+	<div class="row">   
+		<div class="col-sm-4">
+			<div class="gray">
+				<strong>Modificar incidencia</strong>
+				<br/>
+				<form action="/update/{{item.key}}/" method="post" enctype="multipart/form-data" role="form">
+					<div class="form-group">
+						<label for="title">Nombre:</label>
+						<input type="text" name="title" value="{{ item.title }}" class="form-control"></input>
+					</div>
+					<div class="form-group">
+						<label for="description">Descripcion:</label>
+						<textarea rows="16" class="form-control" name="description">{{ item.description }}</textarea>
+					</div>
+					<div class="form-group">
+						<label for="image">Agregar imagen:</label>
+						<input type="file" class="btn btn-primary" name="image" id="myFile"></input>
+					</div>
+					<div class="form-group">
+						<label for="cats">Proyecto/s:</label>&nbsp;&nbsp;
+		                <input class="search-input form-control" name="cats"></input>
+				        <div id="jstree_demo"></div>
+						<input type="hidden" name="catkeys" id="catkeys"/>
+					</div>
+					<input type="submit" value="Guardar Cambios" class="btn btn-default"></input>
+				</form>
+			</div>
+		</div>
+	</div>	
+	<div class="row">   
+		{% for image in item.images %}
+		<div class="col-sm-4">
+			<form action="/update/{{item.key}}/" method="post" enctype="multipart/form-data" role="form">	
+				<div class="form-group">
+					<img src="/image/{{image.key}}/" alt="{{item.title}}" width="300" height="300"/>
+					<input type="hidden" name="imagekey" value="{{image.key}}"/>
+					<input type="submit" class="btn btn-danger" value="Eliminar imagen"/>
+				</div>
+			</form>
+		</div>
+	    {% endfor %}
+	</div>
+</div>
+<script>
+$(document).ready(function() {
+	//binds to onchange event of your input field
+	$('#myFile').bind('change', function() {
+	  if(this.files[0].size>2097152){
+		if (!$('#dataConfirmModal').length) {
+			$('body').append('<div id="dataConfirmModal" class="modal fade" role="dialog" aria-labelledby="dataConfirmLabel">'+
+			'<div class="modal-content">'+
+			'	<div class="modal-header">'+
+			'		<button type="button" class="close" data-dismiss="modal">&times;</button>'+
+			'		<h4 id="dataConfirmLabel" class="modal-title">Tamaño de la imagen superior a 2MB</h4>'+
+			'	</div>'+
+			'	<div class="modal-body"></div>'+
+			'	<div class="modal-footer">'+
+			'		<button type="button" class="btn btn-primary" data-dismiss="modal">Aceptar</button>'+
+			'	</div>'+
+			'</div>'+
+			'</div>');
+		} 
+		
+		$('#dataConfirmModal').find('.modal-body').text('Para mejor funcionalidad pruebe con imagenes pequeñas/ recortadas o de baja calidad menores a 1MB');
+		$('#dataConfirmModal').modal({show:true});
+		resetFormElement($(this));
+	  }
+	});
+	
+	        $('#jstree_demo').jstree({
+		    "core": {"data" : [],check_callback : true}
+			,"search": { "case_insensitive": true,"show_only_matches" : true}
+			,"contextmenu": {
+				"items": function ($node) {
+					var tree = $("#jstree_demo").jstree(true);
+					return {
+						"Agregar": {
+							"label": "Agregar Proyecto",
+							"action": function (obj) {
+							    $node = tree.create_node($node);
+								tree.edit($node);
+							}
+						},
+						"Renombrar": {
+							"label": "Renombrar Proyecto",
+							"action": function (obj) {
+								tree.edit($node);
+							}
+						},
+						"Eliminar": {
+							"label": "Eliminar Proyecto",
+							"action": function (obj) {
+								tree.delete_node($node);
+							}
+						}
+					};
+				}
+			}
+			,"checkbox" : {tie_selection : true ,"keep_selected_style" : false}
+			,"plugins" : ["contextmenu", "dnd", "search", "state", "wholerow", "checkbox"]
+			
+		}).bind('rename_node.jstree',function (node, ref) { 
+		 var command;
+		 //la longitud es menor a 10 es porque jstree asigna ids cortos asi vemos que sea un nuevo nodo
+		 if (ref.old=='New node' && ref.node.id.length<10){
+			command='create';
+			$.ajax({
+				method: "POST",
+				dataType: "json",
+				url: "/categories",
+				data: {'parentKey':ref.node.parent,'name':ref.text,'command':command}
+			  }).done(function (data) { 
+				$.ajax({
+				method: "POST",
+				dataType: "json",
+				url: "/categories",
+				data: {}
+			  }).done(function (dataout) { 
+				$("#jstree_demo").jstree(true).settings.core.data = dataout;
+				//$("#jstree_demo").jstree(true).refresh();
+				$("#jstree_demo").jstree(true).load_node('#');
+
+		   });});
+		}else {
+			command='rename';
+			$.ajax({
+				method: "POST",
+				dataType: "json",
+				url: "/categories",
+				data: {'Key':ref.node.id,'name':ref.text,'command':command}
+			  }).done(function (data) { 
+				$.ajax({
+				method: "POST",
+				dataType: "json",
+				url: "/categories",
+				data: {}
+			  }).done(function (dataout) { 
+				$("#jstree_demo").jstree(true).settings.core.data = dataout;
+				//$("#jstree_demo").jstree(true).refresh();
+				$("#jstree_demo").jstree(true).load_node('#');
+		   });});	 
+		}
+
+		}).bind('delete_node.jstree',function (node, ref) {
+		
+			$.ajax({
+		method: "POST",
+	    dataType: "json",
+	    url: "/categories",
+	    data: {'parentKey':ref.node.parent,'Key':ref.node.id,'command':'delete'}
+	  }).done(function (data) { });
+
+		});
+	   
+ setTimeout($.ajax({
+		method: "POST",
+	    dataType: "json",
+	    url: "/categories",
+	    data: {"itemkey":"{{item.key}}"}
+	  }).done(function (data) { 
+		$("#jstree_demo").jstree(true).settings.core.data = data;
+		//$("#jstree_demo").jstree(true).refresh();
+		$("#jstree_demo").jstree(true).load_node('#');
+   }),1000);
+
+	$('#jstree_demo').on("changed.jstree", function (e, data) {
+	  var selectedElmsIds = [];
+      var selectedElms = $('#jstree_demo').jstree("get_selected", true);
+	  $.each(selectedElms, function() {
+        selectedElmsIds.push(String(this.id));
+      });
+	$('#catkeys').val(selectedElmsIds);
+});
+
+
+
+    $(".search-input").keyup(function() {
+        var searchString = $(this).val();
+        $('#jstree_demo').jstree('search', searchString);
+    });
+	
+});
+function resetFormElement(e) {
+  e.wrap('<form>').closest('form').get(0).reset();
+  e.unwrap();
+  // Prevent form submission
+  e.stopPropagation();
+  e.preventDefault();
+}
+</script>
+{% endblock %}

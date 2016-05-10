@@ -1,0 +1,125 @@
+{% extends "base.htm" %}
+
+{% block title %}Administrar Proyectos {% endblock %}
+{% block heading %}Administrar Proyectos {% endblock %}
+{% block head %}
+<link rel="stylesheet" href="/static/css/style.min.css">
+<script src="/static/js/jstree.min.js" type="text/javascript"></script>
+{% endblock %}
+{% block content %}
+<div class="container">
+	<div class="row"> 
+			<div class="col-sm-4">
+				<div class="gray">
+				    <input class="search-input form-control"></input>
+				    <div id="jstree_demo"></div>
+				</div>
+			</div>	
+	</div>
+</div>
+<script>
+$(document).ready(function() {
+         $('#jstree_demo').jstree({
+		    "core": {"data" : [],check_callback : true}
+			,"search": { "case_insensitive": true,"show_only_matches" : true}
+			,"contextmenu": {
+				"items": function ($node) {
+					var tree = $("#jstree_demo").jstree(true);
+					return {
+						"Agregar": {
+							"label": "Agregar Proyecto",
+							"action": function (obj) {
+							    $node = tree.create_node($node);
+								tree.edit($node);
+							}
+						},
+						"Renombrar": {
+							"label": "Renombrar Proyecto",
+							"action": function (obj) {
+								tree.edit($node);
+							}
+						},
+						"Eliminar": {
+							"label": "Eliminar Proyecto",
+							"action": function (obj) {
+								tree.delete_node($node);
+							}
+						}
+					};
+				}
+			}
+			,"plugins" : ["contextmenu", "dnd", "search","state", "wholerow"]
+			
+		}).bind('rename_node.jstree',function (node, ref) { 
+		 var command;
+		 //la longitud es menor a 10 es porque jstree asigna ids cortos asi vemos que sea un nuevo nodo
+		 if (ref.old=='New node' && ref.node.id.length<10){
+			command='create';
+			$.ajax({
+				method: "POST",
+				dataType: "json",
+				url: "/categories",
+				data: {'parentKey':ref.node.parent,'name':ref.text,'command':command}
+			  }).done(function (data) { 
+				$.ajax({
+				method: "POST",
+				dataType: "json",
+				url: "/categories",
+				data: {}
+			  }).done(function (dataout) { 
+				$("#jstree_demo").jstree(true).settings.core.data = dataout;
+				$("#jstree_demo").jstree(true).refresh();
+		   });});
+		}else {
+			command='rename';
+			$.ajax({
+				method: "POST",
+				dataType: "json",
+				url: "/categories",
+				data: {'Key':ref.node.id,'name':ref.text,'command':command}
+			  }).done(function (data) { 
+				$.ajax({
+				method: "POST",
+				dataType: "json",
+				url: "/categories",
+				data: {}
+			  }).done(function (dataout) { 
+				$("#jstree_demo").jstree(true).settings.core.data = dataout;
+				$("#jstree_demo").jstree(true).refresh();
+		   });});	 
+		}
+
+		}).bind('delete_node.jstree',function (node, ref) { 
+			$.ajax({
+		method: "POST",
+	    dataType: "json",
+	    url: "/categories",
+	    data: {'parentKey':ref.node.parent,'Key':ref.node.id,'command':'delete'}
+	  }).done(function (data) { });
+
+		});
+	   
+var dataout;
+	$.ajax({
+		method: "POST",
+	    dataType: "json",
+	    url: "/categories",
+	    data: {}
+	  }).done(function (data) { 
+	    dataout=data;
+		$("#jstree_demo").jstree(true).settings.core.data = dataout;
+		$("#jstree_demo").jstree(true).refresh();
+   });
+
+	$('#jstree_demo').on("changed.jstree", function (e, data) {
+
+});
+
+    $(".search-input").keyup(function() {
+        var searchString = $(this).val();
+        $('#jstree_demo').jstree('search', searchString);
+    });
+
+});
+</script>
+{% endblock %}

@@ -1,0 +1,94 @@
+{% extends "base.htm" %}
+
+{% block title %}Comprar {{ item.title }}{% endblock %}
+{% block heading %}Comprar {{ item.title }}{% endblock %}
+
+{% block content %}
+<div class="container">
+	<div class="row">   
+		<div class="col-sm-4">
+			<div class="gray">
+				<br/><br/><p>Usted desea comprar <strong>{{ item.title }}</strong> por <strong>${{ item.price_dollars|floatformat:2 }}USD</strong>.</p>
+				<br/>
+				<div id="myCarousel{{ item.key }}" class="carousel slide" data-ride="carousel">
+					<div class="carousel-inner" role="listbox">
+					  {% for image in item.images %}
+						{% if forloop.first %}  
+							<div class="carouselImg item active">
+								<img src="/image/{{ image.key }}/" alt="{{ item.title }}"/>
+							</div>
+						{% else %}
+							<div class="carouselImg item">
+								<img src="/image/{{ image.key }}/" alt="{{ item.title }}"/>
+							</div>
+						{% endif %}
+					  {% endfor %}
+					</div>
+					  {% for image in item.images %}
+						{% if forloop.first %}
+					<!-- Left and right controls -->
+					<a class="left carousel-control" href="#myCarousel{{ item.key }}" role="button" data-slide="prev">
+					  <span class="glyphicon glyphicon-chevron-left" aria-hidden="true"></span>
+					  <span class="sr-only">Anterior</span>
+					</a>
+					<a class="right carousel-control" href="#myCarousel{{ item.key }}" role="button" data-slide="next">
+					  <span class="glyphicon glyphicon-chevron-right" aria-hidden="true"></span>
+					  <span class="sr-only">Siguiente</span>
+					</a>
+						{% endif %}
+					  {% endfor %}
+				</div>
+				<br/><br/><p>{{ item.description }}</p><br/><br/>
+				<form action="/buy/{{ item.key }}/" method="post">
+				  <label for="qty">Cantidad:&nbsp; </label><input type="number" min="1" step="1" name="qty" value="1"/><br/><br/>
+				  <input type="submit" class="btn btn-primary"  value="Comprar ahora"/>
+				</form>
+			</div>	
+		</div>
+		{% if address %}
+		<div class="col-sm-4" >					  
+			<strong>Direccion de envío:</strong>
+			<div class="gray" role="form">
+			{% if shipping %}
+				<label for="shippingPrice">Precio de envío aproximado USD:</label>
+				<input type="text" value="{{ shipping.price }}" name="shippingPrice" class="form-control"/><br/><br/>
+			{% endif %}
+				  <select class="form-control">
+						<option value="{{ address.country }}" class="country" selected></option>
+				  </select><br/><br/>
+				<label for="pobox">C.P/Po Box:</label>
+				<input type="text" value="{{ address.cp }}" name="pobox" class="form-control"/><br/><br/>
+				{% if address.postalCode %}
+				<select class="form-control">
+					<option value="{{ address.postalCode.key }}" class="pob" selected>{{ address.postalCode.destination }}</option>
+				</select>
+				<br/><br/>
+				{% endif %}
+				<label for="address">Direccion Completa:</label>
+				<textarea rows="4" cols="50" name="address" class="form-control">{{ address.address }}</textarea><br/><br/>	
+				<a class="btn btn-primary" href="/profile" role="button">Otra Direccion de Envío</a><br/><br/>		
+			</div>
+		</div>
+		{% else %}
+		<div class="row">   
+			<div class="col-sm-4">
+				<a class="btn btn-primary" href="/profile" role="button">Agregue una Direccion de Envío</a>
+			</div>
+		</div>
+		{% endif %}
+	</div>
+</div>
+<script>
+$(document).ready(function() {
+	$('.country').each(function( index ) {
+		  if($( this ).attr("value")=="0")$( this ).text("Mexico");
+		  if($( this ).attr("value")=="1")$( this ).text("United States/Canada");
+		  if($( this ).attr("value")=="2")$( this ).text("Europe,Caribbean,Center/SouthAmerica");
+		  if($( this ).attr("value")=="3")$( this ).text("Asia,Africa,Australia/Oceania");
+	});
+	$('.pob').each(function( index ) { 
+		$(this).text($(this).text().replace(/\+/g, " "));
+	});
+});
+</script>
+{% endblock %}

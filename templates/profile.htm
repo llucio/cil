@@ -1,0 +1,23 @@
+{% extends "base.htm" %}
+
+{% block title %}Perfil de usuario{% endblock %}
+{% block heading %}Perfil de usuario{% endblock %}
+
+{% block content %}
+<div class="container">
+	<div class="row">   
+		<div class="col-sm-4">
+			<strong>Actualiza tu perfil</strong>
+			<br/><br/>
+			<form action="/profile" method="post" enctype="multipart/form-data" role="form">
+				 <div class="form-group">
+					  <label for="name">Nombre Completo:&nbsp; </label>
+					  <input type="text" name="name" value="{{ profile.name }}" class="form-control"/>
+				  </div>
+			  <input type="submit" class="btn btn-primary" value="Guardar"/><br/><br/>
+			</form>
+		</div>
+	</div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,84 @@
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="/static/css/bootstrap.min.css">
+  <script src="/static/js/jquery.min.js"></script>
+  <script src="/static/js/bootstrap.min.js"></script>
+  <script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+  <script src="https://apis.google.com/js/platform.js" async defer></script>
+  <link rel="stylesheet" href="/static/style.css"/>
+  <title>{% block title %}{% endblock %}</title>
+  {% block head %}{% endblock %}
+</head>
+<body>
+	<!-- Load Facebook SDK for JavaScript -->
+	<div id="fb-root"></div>
+<script>
+  window.fbAsyncInit = function() {
+    FB.init({
+      appId      : '210399806002465',
+      xfbml      : true,
+      version    : 'v2.5'
+    });
+  };
+
+  (function(d, s, id){
+     var js, fjs = d.getElementsByTagName(s)[0];
+     if (d.getElementById(id)) {return;}
+     js = d.createElement(s); js.id = id;
+     js.src = "//connect.facebook.net/en_US/sdk.js";
+     fjs.parentNode.insertBefore(js, fjs);
+   }(document, 'script', 'facebook-jssdk'));
+</script>
+
+<div class="row">
+	<div class="col-sm-12">
+		<a href="/">Inicio</a>  <div style="float:right;"id="google_translate_element"></div>
+		<h2>{% block heading %}{% endblock %}</h2>
+		<div class="row">
+			<div id="header" class="col-sm-12"><br>
+			{% if user %}
+			  <div class="col-sm-1">Logeado como <b>{{ user.nickname }}</b>. &nbsp;&nbsp;&nbsp;<a href="{{ user_auth_url }}">Logout</a></div>
+			  <div class="col-sm-1"><a href="/profile">Perfil</a></div>
+				{% if profile %}
+					{% if profile.role == 'ADMIN' %}
+					<div class="col-sm-1"><a href="/incident">Crear Incidencia</a></div>
+					<div class="col-sm-1"><a href="/categories">Proyectos</a></div>
+					{% endif %}
+				{% else %}
+				{% endif %}
+			{% else %}
+			 <div class="col-sm-1"> No haz ingresado. &nbsp;&nbsp;&nbsp;<a href="{{ user_auth_url }}">Login</a></div>
+			{% endif %}<br>
+			</div>
+		</div>
+	</div>
+</div>
+<div class="row">
+	<div class="col-sm-4">
+	{% if message %}
+	  <div id="message">{{ message }}</div>
+	{% endif %}
+	</div>
+</div>
+<div class="row">
+	<div id="content">
+	{% block content %}
+	{% endblock %}
+	</div>
+</div><br/>
+	<div id="footer">
+	Control de Incidencias en linea<a href="#">CIL</a>. 
+	</div>
+	<div id="footer"><a href="#">LLUCIO</a>. 
+	</div>
+</body>
+</html>
+<script type="text/javascript">
+function googleTranslateElementInit() {
+  new google.translate.TranslateElement({pageLanguage: 'es', layout: google.translate.TranslateElement.InlineLayout.SIMPLE, multilanguagePage: true}, 'google_translate_element');
+}
+</script>
+
+        

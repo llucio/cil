@@ -1,0 +1,57 @@
+{% for item in items %}
+<div class="col-sm-4">
+	<div class="gray">
+	<ul>
+		<li><strong>{{ item.id }}</strong><br/>
+		<strong>{{ item.title }}</strong> reportado por: <strong>{{ item.owner }}</strong><br/>
+		<strong>{{ item.created }}</strong><br/>
+			<div id="myCarousel{{ item.key }}" class="carousel slide" data-ride="carousel">
+				<div class="carousel-inner" role="listbox">
+				  {% for image in item.images %}
+					{% if forloop.first %}  
+						<div class="carouselImg item active">
+							<img src="/image/{{ image.key }}/" alt="{{ item.title }}"/>
+						</div>
+					{% else %}
+						<div class="carouselImg item">
+							<img src="/image/{{ image.key }}/" alt="{{ item.title }}"/>
+						</div>
+					{% endif %}
+				  {% endfor %}
+				</div>
+				  {% for image in item.images %}
+					{% if forloop.first %}
+				<!-- Left and right controls -->
+				<a class="left carousel-control" href="#myCarousel{{ item.key }}" role="button" data-slide="prev">
+				  <span class="glyphicon glyphicon-chevron-left" aria-hidden="true"></span>
+				  <span class="sr-only">Anterior</span>
+				</a>
+				<a class="right carousel-control" href="#myCarousel{{ item.key }}" role="button" data-slide="next">
+				  <span class="glyphicon glyphicon-chevron-right" aria-hidden="true"></span>
+				  <span class="sr-only">Siguiente</span>
+				</a>
+					{% endif %}
+				  {% endfor %}
+			</div>
+			<br/><br/><p>{{ item.description }}</p><br/>
+		{% if user %}	
+		{% if profile.role == 'ADMIN' %}
+			<a href="/update/{{ item.key }}/">Modificar esta incidencia</a><br/>
+			<a href="/delete/{{ item.key }}/" data-confirm="Estas seguro de borrar este producto?">Eliminar incidencia</a><br/>
+		{% endif %}
+		{% endif %}
+		<!--
+			<a href="/buy/{{ item.key }}/" class="btn btn-primary" role="button">Comprar ahora</a><br/><br/>
+			<button type="button" class="btn btn-info" productkey="{{ item.key }}">Añadir al carro</button><br/><br/>
+			<div class="panel panel-default">
+				<div class="panel-body">		-->		<!-- Your share button code --><!--
+					<div class="fb-like" data-href="/item/{{ item.key }}/" data-layout="button_count" data-share="true" data-width="450" data-show-faces="true"></div>
+					<div class="g-plusone" data-annotation="none" data-href="/item/{{ item.key }}/"></div>
+					<div class="g-plus" data-action="share" data-annotation="none" data-href="/item/{{ item.key }}/"></div>
+				</div>
+			</div>-->
+		</li>
+	</ul>
+	</div>
+</div>
+{% endfor %}
